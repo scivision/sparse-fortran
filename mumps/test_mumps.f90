@@ -78,25 +78,29 @@ end subroutine simple_test
 subroutine read_input(mumps_par)
 
 type(dmumps_struc), intent(inout) :: mumps_par
-integer :: I, u
+integer :: i, u
 INTEGER(i64) :: I8
+character(2048) :: argv
 
 IF ( mumps_par%MYID == 0 ) THEN
 
-open(newunit=u, file='input_simpletest_real', form='formatted', status='old', action='read')
-READ(u,*) mumps_par%N
-READ(u,*) mumps_par%NNZ
-ALLOCATE( mumps_par%IRN ( mumps_par%NNZ ) )
-ALLOCATE( mumps_par%JCN ( mumps_par%NNZ ) )
-ALLOCATE( mumps_par%A( mumps_par%NNZ ) )
-ALLOCATE( mumps_par%RHS ( mumps_par%N  ) )
-DO I8 = 1, mumps_par%NNZ
-  READ(u,*) mumps_par%IRN(I8),mumps_par%JCN(I8), mumps_par%A(I8)
-END DO
-DO I = 1, mumps_par%N
-  READ(u,*) mumps_par%RHS(I)
-END DO
-close(u)
+  call get_command_argument(1,argv,status=i)
+  if(i/=0) error stop 'please specify filename with mumps test data'
+
+  open(newunit=u, file=argv, form='formatted', status='old', action='read')
+  READ(u,*) mumps_par%N
+  READ(u,*) mumps_par%NNZ
+  ALLOCATE( mumps_par%IRN ( mumps_par%NNZ ) )
+  ALLOCATE( mumps_par%JCN ( mumps_par%NNZ ) )
+  ALLOCATE( mumps_par%A( mumps_par%NNZ ) )
+  ALLOCATE( mumps_par%RHS ( mumps_par%N  ) )
+  DO I8 = 1, mumps_par%NNZ
+    READ(u,*) mumps_par%IRN(I8),mumps_par%JCN(I8), mumps_par%A(I8)
+  END DO
+  DO I = 1, mumps_par%N
+    READ(u,*) mumps_par%RHS(I)
+  END DO
+  close(u)
 
 END IF
 
@@ -114,7 +118,7 @@ IF(mumps_par%INFOG(1) < 0) THEN
   write(stderr,'(A,I6,A,I9)')"  mumps_par%INFOG(1)= ", mumps_par%INFOG(1),  "  mumps_par%INFOG(2)= ", mumps_par%INFOG(2)
   error stop
 elseiF(mumps_par%INFOG(1) > 0) THEN
-  WRITE(stderr,*) "WARNINGG: "
+  WRITE(stderr,*) "WARNING: "
   write(stderr,'(A,I6,A,I9)')"  mumps_par%INFOG(1)= ", mumps_par%INFOG(1),  "  mumps_par%INFOG(2)= ", mumps_par%INFOG(2)
 END IF
 
