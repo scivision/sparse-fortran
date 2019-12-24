@@ -1,9 +1,19 @@
 fc = meson.get_compiler('fortran')
 
+os = host_machine.system()
+
 mklroot = get_option('mklroot')
+mkllib_root = mklroot/'lib/intel64'
 
 mpiexec = find_program('mpiexec')
 mpi = dependency('mpi', language: 'fortran')
+
+# MKL OpenMP
+intelMP_lib = []
+if mklroot != ''
+  n = os == 'windows' ? 'iomp5md' : 'iomp5'
+  intelMP_lib = fc.find_library(n, dirs: mklroot / '../compiler/lib/intel64')
+endif
 
 # --- Lapack
 if mklroot == ''
@@ -20,6 +30,12 @@ endif
 
 if not fc.links('print *,disnan(0.); end', dependencies: lapack, name: 'LAPACK')
   lapack = disabler()
+endif
+
+# --- MKL Pardiso
+pardiso = disabler()
+if mklroot != ''
+  pardiso = [fc.find_library('mkl_blacs_intelmpi_lp64', dirs: mkllib_root), lapack]
 endif
 
 # --- Scalapack

@@ -16,3 +16,4 @@ find_package(METIS)
 
 add_subdirectory(src)
 add_subdirectory(mumps)
+add_subdirectory(pardiso)
