@@ -23,7 +23,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends gfortran liblapack-dev libscalapack-dev libmumps-dev libparmetis-dev
+        sudo apt install -yq --no-install-recommends gfortran liblapack-dev libscalapack-openmpi-dev libmumps-dev libparmetis-dev
     - run: meson setup build
       env:
         FC: gfortran
