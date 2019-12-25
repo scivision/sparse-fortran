@@ -1,7 +1,7 @@
 !! https://github.com/lanl/qmd-progress/
-!! NOTE: should we use iso_c_binding?
 
 use, intrinsic:: iso_fortran_env, only: dp=>real64
+
 implicit none
 !> 0  METIS_OPTION_PTYPE
 !>    -- 0 METIS_PTYPE_RB
@@ -61,11 +61,11 @@ adjncy=[2, 6, 1, 3, 7, 2, 4, 8, 3, 5, 9, 4, 10, 1, 7, 11, 12, 6, 8,&
 call METIS_PartGraphKway(nvtxs, ncon, xadj, adjncy, vwgt, vsize, adjwgt, nparts, tpwgts, ubvec, options, objval, part)
 
 do, j=1,nvtxs
-  write(*,*) j, part(j)
+  print *, j, part(j)
 enddo
 
 refpart = [3,1,1,2,4,3,4,2,2,4,3,1,1,2,4]
 
-if(any(part/=refpart)) error stop 'metis failed to order'
+if(any(part /= refpart)) error stop 'metis failed to order'
 
 end program

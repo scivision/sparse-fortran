@@ -19,7 +19,7 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
-    - run: pip install meson
+    - run: pip install meson ninja
     - name: Install packages
       run: |
         sudo apt update -yq

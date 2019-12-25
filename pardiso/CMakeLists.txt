@@ -1,0 +1,10 @@
+find_package(SCALAPACK COMPONENTS MKL)
+if(NOT SCALAPACK_FOUND)
+  message(STATUS "Currently the Pardiso demo is for MKL")
+  return()
+endif()
+
+add_executable(pardiso_basic pardiso_basic.f90)
+target_link_libraries(pardiso_basic PRIVATE ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES})
+target_include_directories(pardiso_basic PRIVATE ${SCALAPACK_INCLUDE_DIRS})
+add_test(NAME pardisoBasic COMMAND pardiso_basic)
