@@ -20,20 +20,20 @@ endif()
 
 
 # Mumps
-if(realbits EQUAL 32)
-  set(mumpscomp s)
-else()
-  set(mumpscomp d)
+if(NOT arith)
+  if(realbits EQUAL 32)
+    set(arith s)
+  else()
+    set(arith d)
+  endif()
 endif()
 
-find_package(MUMPS COMPONENTS ${mumpscomp})
+# find_package(MUMPS COMPONENTS ${arith})
 if(NOT MUMPS_FOUND)
   return()
 endif()
 
-list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES})
-
-#-- optional--normally we use PORD instead.
+# -- optional -- PORD is always used.
 if(Scotch_ROOT)
   find_package(Scotch COMPONENTS ESMUMPS)
   if(Scotch_FOUND)
@@ -46,4 +46,20 @@ if(METIS_ROOT)
   if(METIS_FOUND)
     list(APPEND MUMPS_LIBRARIES ${METIS_LIBRARIES})
   endif()
+endif()
+
+# -- minimal check that MUMPS is linkable
+include(CheckFortranSourceCompiles)
+
+set(CMAKE_REQUIRED_LIBRARIES ${MUMPS_LIBRARIES} ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
+set(CMAKE_REQUIRED_INCLUDES ${MUMPS_INCLUDE_DIRS} ${SCALPAACK_INCLUDE_DIRS})
+
+check_fortran_source_compiles("include '${arith}mumps_struc.h'
+type(${arith}mumps_struc) :: mumps_par
+end"
+  MUMPS_OK SRC_EXT f90)
+
+if(NOT MUMPS_OK)
+  set(MUMPS_FOUND false PARENT_SCOPE)
+  return()
 endif()
