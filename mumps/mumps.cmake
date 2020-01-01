@@ -7,19 +7,34 @@
 # CentOS 6/7 EPEL: yum install mumps-devel
 # Ubuntu / Debian: apt install libmumps-dev
 
-if(LIB_DIR)
-  set(MUMPS_ROOT ${LIB_DIR}/MUMPS)
-endif()
+unset(_mumps_extra)
 
 if(BLACS_ROOT)
-  find_package(BLACS)
-  if(BLACS_FOUND)
-    list(APPEND SCALAPACK_LIBRARIES ${BLACS_LIBRARIES})
-  endif()
+  find_package(BLACS REQUIRED)
+  list(APPEND _mumps_extra ${BLACS_LIBRARIES})
 endif()
 
+if(metis OR metis IN_LIST ordering)
+  find_package(METIS REQUIRED)
+  list(APPEND _mumps_extra ${METIS_LIBRARIES})
+endif()
 
-# Mumps
+if(scotch OR scotch IN_LIST ordering)
+  find_package(Scotch REQUIRED COMPONENTS ESMUMPS)
+  list(APPEND _mumps_extra ${Scotch_LIBRARIES})
+endif()
+
+find_package(SCALAPACK)
+if(NOT SCALAPACK_FOUND)
+  message(STATUS "SKIP: MUMPS due to missing scalapack")
+endif()
+
+find_package(LAPACK)
+if(NOT LAPACK_FOUND)
+  message(STATUS "SKIP: MUMPS due to missing lapack")
+endif()
+
+# -- MUMPS
 if(NOT arith)
   if(realbits EQUAL 32)
     set(arith s)
@@ -28,25 +43,11 @@ if(NOT arith)
   endif()
 endif()
 
-# find_package(MUMPS COMPONENTS ${arith})
+find_package(MUMPS COMPONENTS ${arith})
 if(NOT MUMPS_FOUND)
   return()
 endif()
 
-# -- optional -- PORD is always used.
-if(Scotch_ROOT)
-  find_package(Scotch COMPONENTS ESMUMPS)
-  if(Scotch_FOUND)
-    list(APPEND MUMPS_LIBRARIES ${Scotch_LIBRARIES})
-  endif()
-endif()
-
-if(METIS_ROOT)
-  find_package(METIS)
-  if(METIS_FOUND)
-    list(APPEND MUMPS_LIBRARIES ${METIS_LIBRARIES})
-  endif()
-endif()
 
 # -- minimal check that MUMPS is linkable
 include(CheckFortranSourceCompiles)

@@ -12,10 +12,12 @@ if(NOT hasParent)
   find_package(MPI COMPONENTS Fortran REQUIRED)
   find_package(SCALAPACK REQUIRED)
   find_package(LAPACK REQUIRED)
+  find_package(OpenMP COMPONENTS C Fortran REQUIRED)
 endif()
 
 if(NOT SCALAPACK_FOUND)
   message(STATUS "SKIP: MUMPS requires SCALAPACK")
+  return()
 endif()
 
 if(NOT realbits)
@@ -26,13 +28,17 @@ include(mumps.cmake)
 
 add_executable(testmumps test_mumps.f90)
 if(NOT MUMPS_FOUND)
+  if(NOT OpenMP_FOUND)
+    message(STATUS "SKIP: MUMPS requires OpenMP")
+    return()
+  endif()
   include(mumps_external.cmake)
   target_link_directories(testmumps PRIVATE ${MUMPS_BINARY_DIR})
   add_dependencies(testmumps MUMPS)
 endif()
 target_compile_options(testmumps PRIVATE ${FFLAGS})
 target_include_directories(testmumps PRIVATE ${MUMPS_INCLUDE_DIRS} ${SCALAPACK_INCLUDE_DIRS})
-target_link_libraries(testmumps PRIVATE ${MUMPS_LIBRARIES} ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
+target_link_libraries(testmumps PRIVATE ${MUMPS_LIBRARIES} ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
 
 add_test(NAME MUMPS
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}

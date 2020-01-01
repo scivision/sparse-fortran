@@ -2,7 +2,7 @@ include(ExternalProject)
 
 ExternalProject_Add(MUMPS
   GIT_REPOSITORY https://github.com/scivision/mumps.git
-  GIT_TAG master
+  GIT_TAG v5.2.1.3
   INSTALL_COMMAND ""  # disables the install step for the external project
 )
 
@@ -12,10 +12,15 @@ set(MUMPS_SOURCE_DIR ${SOURCE_DIR})
 
 # here we have to use a priori about MUMPS, since MUMPS won't build as ExernalProject at configure time,
 # which is when find_package() is run
-# An alternative (messy) is a make a "superproject)" that uses both as external projects and calls CMake twice.
+# An alternative (messy) is a make a "superproject" that uses both as external projects and calls CMake twice.
 # This method below seems much preferable.
 # Meson makes this much easier, and is a key reason to use Meson instead of CMake.
 # FIXME: this doesn't cover Scotch or Metis.
 
-set(MUMPS_LIBRARIES ${arith}mumps mumps_common pord)
+unset(MUMPS_LIBRARIES)
+foreach(a ${arith})
+  list(APPEND MUMPS_LIBRARIES ${a}mumps)
+endforeach()
+
+list(APPEND MUMPS_LIBRARIES mumps_common pord)
 set(MUMPS_INCLUDE_DIRS ${MUMPS_BINARY_DIR} ${MUMPS_SOURCE_DIR}/include)
