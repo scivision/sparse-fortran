@@ -20,7 +20,7 @@ endif()
 
 set(mumps_external true)
 if(MUMPS_ROOT OR CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  # find_package(MUMPS COMPONENTS ${arith})
+  find_package(MUMPS COMPONENTS ${arith})
   if(MUMPS_FOUND)
     set(mumps_external false)
   endif()
