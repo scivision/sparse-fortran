@@ -8,7 +8,7 @@ if(METIS_FOUND)
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
-
+find_package(SCALAPACK)
 if(SCALAPACK_FOUND)
   add_executable(blacs_demo blacs_demo.f90)
   target_link_libraries(blacs_demo PRIVATE ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)

@@ -13,9 +13,6 @@ if(NOT realbits)
 endif()
 
 find_package(MPI COMPONENTS Fortran REQUIRED)
-find_package(OpenMP COMPONENTS C Fortran)
-find_package(LAPACK REQUIRED)
-find_package(SCALAPACK)
 
 add_subdirectory(src)
 add_subdirectory(mumps)

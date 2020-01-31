@@ -1,6 +1,13 @@
-find_package(SCALAPACK REQUIRED)
+find_package(SCALAPACK)
 find_package(LAPACK REQUIRED)
 
+if(SCALAPACK_FOUND)
+  set(scalapack_external false)
+else()
+  set(scalapack_external true)
+  include(${CMAKE_CURRENT_LIST_DIR}/scalapack_external.cmake)
+  return()
+endif()
 # -- verify Scalapack links
 
 set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIRS})
