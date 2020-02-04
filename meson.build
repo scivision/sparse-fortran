@@ -1,5 +1,8 @@
 project('sparse', 'c', 'fortran',
-  default_options: ['warning_level=3'])
+  default_options: ['buildtype=release'])
+
+arith = 'd'
+realbits = 64
 
 subdir('meson')
 

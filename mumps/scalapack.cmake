@@ -1,5 +1,9 @@
+find_package(LAPACK)
+if(NOT LAPACK_FOUND)
+  include(${CMAKE_CURRENT_LIST_DIR}/lapack_external.cmake)
+endif()
+
 find_package(SCALAPACK)
-find_package(LAPACK REQUIRED)
 
 if(SCALAPACK_FOUND)
   set(scalapack_external false)
@@ -15,11 +19,12 @@ set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI
 # MPI needed for ifort
 
 set(_code "
+use, intrinsic :: iso_fortran_env, only : real64
 implicit none
 
 integer :: ictxt, myid, nprocs, mycol, myrow, npcol, nprow
-real :: eps
-real, external :: pslamch
+real(real64) :: eps
+real(real64), external :: pdlamch
 
 ! arbitrary test parameters
 npcol = 2
@@ -31,7 +36,7 @@ call blacs_gridinit(ictxt, 'C', nprocs, 1)
 
 call blacs_gridinfo(ictxt, nprow, npcol, myrow, mycol)
 
-eps = pslamch(ictxt, 'E')
+eps = pdlamch(ictxt, 'E')
 
 if(myrow == mycol) print '(A, F10.6)', 'OK: Scalapack Fortran  eps=', eps
 

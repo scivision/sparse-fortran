@@ -15,12 +15,11 @@ else()
   set(arith d)
 endif()
 
-# --- scalapack
+# --- Scalapack
 
 include(${CMAKE_CURRENT_LIST_DIR}/scalapack.cmake)
 
 # --- MUMPS
-
 
 set(mumps_external true)
 if(MUMPS_ROOT OR CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
@@ -49,6 +48,7 @@ endif()
 list(APPEND MUMPS_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIRS})
 
 if(mumps_external OR scalapack_external)
+# pre-build checks can't be used when external library isn't built yet.
   return()
 endif()
 

@@ -17,7 +17,7 @@ endif
 
 # --- Lapack
 if mklroot == ''
-  lapack = dependency('lapack')
+  lapack = dependency('lapack', required: false, disabler: true)
 else # MKL
   lapack = []
   n1 = fc.get_id() == 'gcc' ? 'mkl_gf_lp64' : 'mkl_intel_lp64'

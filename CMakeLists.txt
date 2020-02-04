@@ -8,9 +8,8 @@ enable_testing()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
-if(NOT realbits)
-  set(realbits 64)
-endif()
+set(realbits 64)
+set(arith "d")
 
 find_package(MPI COMPONENTS Fortran REQUIRED)
 

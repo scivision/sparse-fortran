@@ -9,7 +9,7 @@ if(METIS_FOUND)
 endif()
 
 find_package(SCALAPACK)
-if(SCALAPACK_FOUND)
+if(SCALAPACK_FOUND AND "d" IN_LIST arith)
   add_executable(blacs_demo blacs_demo.f90)
   target_link_libraries(blacs_demo PRIVATE ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
   target_include_directories(blacs_demo PRIVATE ${SCALAPACK_INCLUDE_DIRS})

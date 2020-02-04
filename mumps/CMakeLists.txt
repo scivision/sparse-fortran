@@ -6,12 +6,9 @@ project(MumpsExamples
   LANGUAGES C Fortran)
 enable_testing()
 
-get_directory_property(hasParent PARENT_DIRECTORY)
-if(NOT hasParent)
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Modules)
-  find_package(MPI COMPONENTS Fortran REQUIRED)
-  find_package(OpenMP COMPONENTS C Fortran)
-endif()
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Modules)
+find_package(MPI COMPONENTS Fortran REQUIRED)
+find_package(OpenMP COMPONENTS C Fortran)
 
 include(CheckFortranSourceCompiles)
 include(CheckFortranSourceRuns)

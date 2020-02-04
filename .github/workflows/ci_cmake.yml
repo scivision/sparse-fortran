@@ -23,7 +23,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - run: brew install gcc scalapack
+    - run: brew install pkg-config gcc scalapack
 
     - run: cmake -B build
       env:
@@ -47,7 +47,7 @@ jobs:
       run: |
         pip install cmake
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin
 
     - run: cmake -B build
       env:
