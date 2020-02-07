@@ -10,8 +10,11 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Modules)
 find_package(MPI COMPONENTS Fortran REQUIRED)
 find_package(OpenMP COMPONENTS C Fortran)
 
-include(CheckFortranSourceCompiles)
-include(CheckFortranSourceRuns)
+if(realbits EQUAL 32)
+  set(arith s)
+else()
+  set(arith d)
+endif()
 
 include(mumps.cmake)
 
