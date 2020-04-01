@@ -61,13 +61,18 @@ set(_mkl_libs ${ARGV})
 foreach(s ${_mkl_libs})
   find_library(SCALAPACK_${s}_LIBRARY
            NAMES ${s}
-           PATHS ENV MKLROOT ENV I_MPI_ROOT ENV TBBROOT
+           PATHS
+            ENV MKLROOT
+            ENV I_MPI_ROOT
+            ENV TBBROOT
+            ../tbb/lib/intel64/gcc4.7
+            ../tbb/lib/intel64/vc_mt
+            ../compiler/lib/intel64
            PATH_SUFFIXES
              lib/intel64 lib/intel64_win
              intel64/lib/release
-             lib/intel64/gcc4.7 ../tbb/lib/intel64/gcc4.7
-             lib/intel64/vc_mt ../tbb/lib/intel64/vc_mt
-             ../compiler/lib/intel64
+             lib/intel64/gcc4.7
+             lib/intel64/vc_mt
            HINTS ${MKL_LIBRARY_DIRS} ${MKL_LIBDIR}
            NO_DEFAULT_PATH)
   if(NOT SCALAPACK_${s}_LIBRARY)
@@ -115,7 +120,7 @@ else()
 endif()
 endif()
 
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 
 # some systems (Ubuntu 16.04) need BLACS explicitly, when it isn't statically compiled into libscalapack
 # other systems (homebrew, Ubuntu 18.04) link BLACS into libscalapack, and don't need BLACS as a separately linked library.
@@ -137,7 +142,7 @@ else()
   unset(_impi)
 endif()
 
-pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp)
+pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp QUIET)
 
 if(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
   mkl_scala(mkl_scalapack_lp64 mkl_blacs_openmpi_lp64)
@@ -157,7 +162,7 @@ endif()
 
 elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
 
-pkg_check_modules(SCALAPACK scalapack-openmpi)
+pkg_check_modules(SCALAPACK scalapack-openmpi QUIET)
 
 find_library(SCALAPACK_LIBRARY
               NAMES scalapack scalapack-openmpi
@@ -169,7 +174,7 @@ endif()
 
 elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
 
-pkg_check_modules(SCALAPACK scalapack-mpich)
+pkg_check_modules(SCALAPACK scalapack-mpich QUIET)
 
 find_library(SCALAPACK_LIBRARY
               NAMES scalapack-mpich scalapack-mpich2
