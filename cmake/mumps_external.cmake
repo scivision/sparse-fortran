@@ -17,5 +17,5 @@ if(NOT MUMPS_FOUND)
   message(STATUS "AUTOBUILD: MUMPS")
 endif()
 
-set(MUMPS_LIBRARIES mumps::mumps)
+add_library(MUMPS::MUMPS ALIAS mumps::mumps)
 set(MUMPS_FOUND true)

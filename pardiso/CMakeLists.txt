@@ -20,6 +20,5 @@ find_package(LAPACK COMPONENTS MKL REQUIRED)
 find_package(SCALAPACK COMPONENTS MKL REQUIRED)
 
 add_executable(pardiso_basic pardiso_basic.f90)
-target_link_libraries(pardiso_basic PRIVATE ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES})
-target_include_directories(pardiso_basic PRIVATE ${SCALAPACK_INCLUDE_DIRS})
+target_link_libraries(pardiso_basic PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK)
 add_test(NAME pardisoBasic COMMAND pardiso_basic)

@@ -19,8 +19,7 @@ if(scalapack_external OR lapack_external)
 endif()
 # -- verify Scalapack links
 
-set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIRS} ${LAPACK_INCLUDE_DIRS})
-set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
+set(CMAKE_REQUIRED_LIBRARIES SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 # MPI needed for ifort
 
 if("s" IN_LIST arith)
