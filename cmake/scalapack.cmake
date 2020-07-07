@@ -1,5 +1,6 @@
 # Finds Scalapack, tests, and if not found or broken, autobuild scalapack
 if(scalapack_external)
+  include(${CMAKE_CURRENT_LIST_DIR}/scalapack_external.cmake)
   return()
 endif()
 
@@ -8,6 +9,8 @@ find_package(SCALAPACK)
 if(NOT SCALAPACK_FOUND)
   include(${CMAKE_CURRENT_LIST_DIR}/scalapack_external.cmake)
   set(scalapack_external true CACHE BOOL "autobuild Scalapack")
+else()
+  set(scalapack_external false CACHE BOOL "autobuild Scalapack")
 endif()
 
 if(scalapack_external OR lapack_external)

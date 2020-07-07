@@ -1,8 +1,11 @@
+program test_mumps
 !! Based on MUMPS manual Sec 11.1
-use mpi, only: mpi_init, mpi_finalize, mpi_comm_world
+use mpi, only: mpi_init, mpi_comm_world
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit, i64=>int64
 
-IMPLICIT NONE
+IMPLICIT NONE (type, external)
+
+external :: mpi_finalize, dmumps
 
 INCLUDE 'dmumps_struc.h'
 TYPE (DMUMPS_STRUC) :: mumps_par

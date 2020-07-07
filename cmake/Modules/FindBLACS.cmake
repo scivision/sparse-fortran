@@ -61,17 +61,22 @@ set(_mkl_libs ${ARGV})
 foreach(s ${_mkl_libs})
   find_library(BLACS_${s}_LIBRARY
            NAMES ${s}
-           PATHS ENV MKLROOT ENV I_MPI_ROOT ENV TBBROOT
+           PATHS
+            ${MKLROOT}
+            ENV I_MPI_ROOT
+            ENV TBBROOT
+            ../tbb/lib/intel64/gcc4.7
+            ../tbb/lib/intel64/vc_mt
+            ../compiler/lib/intel64
            PATH_SUFFIXES
              lib/intel64 lib/intel64_win
              intel64/lib/release
-             lib/intel64/gcc4.7 ../tbb/lib/intel64/gcc4.7
-             lib/intel64/vc_mt ../tbb/lib/intel64/vc_mt
-             ../compiler/lib/intel64
+             lib/intel64/gcc4.7
+             lib/intel64/vc_mt
            HINTS ${MKL_LIBRARY_DIRS} ${MKL_LIBDIR}
            NO_DEFAULT_PATH)
   if(NOT BLACS_${s}_LIBRARY)
-    message(WARNING "MKL component not found: " ${s})
+    message(STATUS "MKL component not found: " ${s})
     return()
   endif()
 
@@ -81,14 +86,17 @@ endforeach()
 
 find_path(BLACS_INCLUDE_DIR
   NAMES mkl_blacs.h
-  PATHS ENV MKLROOT ENV I_MPI_ROOT ENV TBBROOT
+  PATHS
+    ${MKLROOT}
+    ENV I_MPI_ROOT
+    ENV TBBROOT
   PATH_SUFFIXES
     include
     include/intel64/lp64
   HINTS ${MKL_INCLUDE_DIRS})
 
 if(NOT BLACS_INCLUDE_DIR)
-  message(WARNING "MKL Include Dir not found")
+  message(STATUS "MKL Include Dir not found")
   return()
 endif()
 
@@ -130,23 +138,20 @@ endif()
 elseif(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
 
 find_library(BLACS_INIT
-  NAMES blacsF77init blacsF77init-openmpi
-  PATHS ${BLACS_ROOT})
+  NAMES blacsF77init blacsF77init-openmpi)
 if(BLACS_INIT)
   list(APPEND BLACS_LIBRARY ${BLACS_INIT})
 endif()
 
 find_library(BLACS_CINIT
-  NAMES blacsCinit blacsCinit-openmpi
-  PATHS ${BLACS_ROOT})
+  NAMES blacsCinit blacsCinit-openmpi)
 if(BLACS_CINIT)
   list(APPEND BLACS_LIBRARY ${BLACS_CINIT})
 endif()
 
 # this is the only lib that scalapack/blacs/src provides
 find_library(BLACS_LIB
-  NAMES blacs blacs-mpi blacs-openmpi
-  PATHS ${BLACS_ROOT})
+  NAMES blacs blacs-mpi blacs-openmpi)
 if(BLACS_LIB)
   list(APPEND BLACS_LIBRARY ${BLACS_LIB})
 endif()
@@ -176,45 +181,48 @@ else()
 endif()
 endif()
 
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
+
+set(BLACS_INCLUDE_DIR)
 
 if(MKL IN_LIST BLACS_FIND_COMPONENTS)
+  # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
+  # double-quotes are necessary per CMake to_cmake_path docs.
+  if(WIN32)
+    file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
+  else()
+    set(MKLROOT "$ENV{MKLROOT}")
+  endif()
 
-if(BUILD_SHARED_LIBS)
-  set(_mkltype dynamic)
-else()
-  set(_mkltype static)
-endif()
+  if(BUILD_SHARED_LIBS)
+    set(_mkltype dynamic)
+  else()
+    set(_mkltype static)
+  endif()
 
-if(WIN32)
-  set(_impi impi)
-else()
-  unset(_impi)
-endif()
+  pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp QUIET)
 
-pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp)
-
-if(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
-  mkl_scala(mkl_blacs_openmpi_lp64)
-  set(BLACS_OpenMPI_FOUND ${BLACS_MKL_FOUND})
-elseif(MPICH IN_LIST BLACS_FIND_COMPONENTS)
-  if(APPLE)
-    mkl_scala(mkl_blacs_mpich_lp64)
-  elseif(WIN32)
-    mkl_scala(mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
-  else()  # MPICH linux is just like IntelMPI
+  if(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
+    mkl_scala(mkl_blacs_openmpi_lp64)
+    set(BLACS_OpenMPI_FOUND ${BLACS_MKL_FOUND})
+  elseif(MPICH IN_LIST BLACS_FIND_COMPONENTS)
+    if(APPLE)
+      mkl_scala(mkl_blacs_mpich_lp64)
+    elseif(WIN32)
+      mkl_scala(mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
+    else()  # MPICH linux is just like IntelMPI
+      mkl_scala(mkl_blacs_intelmpi_lp64)
+    endif()
+    set(BLACS_MPICH_FOUND ${BLACS_MKL_FOUND})
+  else()
     mkl_scala(mkl_blacs_intelmpi_lp64)
   endif()
-  set(BLACS_MPICH_FOUND ${BLACS_MKL_FOUND})
-else()
-  mkl_scala(mkl_blacs_intelmpi_lp64 ${_impi})
-endif()
 
-else()
+else(MKL IN_LIST BLACS_FIND_COMPONENTS)
 
-nonmkl()
+  nonmkl()
 
-endif()
+endif(MKL IN_LIST BLACS_FIND_COMPONENTS)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(BLACS

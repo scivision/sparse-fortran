@@ -14,17 +14,22 @@ include(${CMAKE_CURRENT_LIST_DIR}/scalapack.cmake)
 # --- MUMPS
 
 if(mumps_external)
+  include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
   return()
 endif()
 
 unset(_mumps_extra)
 
-if(MUMPS_ROOT OR CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
+if(MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_Fortran_COMPILER_ID STREQUAL GNU))
   find_package(MUMPS COMPONENTS ${arith})
+else()
+  message(VERBOSE "Skipping find_package(MUMPS)")
 endif()
 if(NOT MUMPS_FOUND)
   include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
   set(mumps_external true CACHE BOOL "autobuild Mumps")
+else()
+  set(mumps_external false CACHE BOOL "autobuild Mumps")
 endif()
 
 if(metis)

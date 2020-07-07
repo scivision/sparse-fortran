@@ -16,10 +16,9 @@ else()
   set(arith d)
 endif()
 
-include(mumps.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/mumps.cmake)
 
 add_executable(testmumps test_mumps.f90)
-target_compile_options(testmumps PRIVATE ${FFLAGS})
 target_include_directories(testmumps PRIVATE ${MUMPS_INCLUDE_DIRS})
 target_link_libraries(testmumps PRIVATE ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
 

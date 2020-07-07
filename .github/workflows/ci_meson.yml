@@ -7,31 +7,30 @@ on:
       - "**.F90"
       - "**.build"
       - ".github/workflows/ci_meson.yml"
-  pull_request:
-    paths:
-      - "**.f90"
-      - "**.F90"
-      - "**.build"
-      - ".github/workflows/ci_meson.yml"
 
 jobs:
 
   linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
       with:
         python-version: '3.x'
+
     - run: pip install meson ninja
+
     - name: Install packages
       run: |
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libparmetis-dev
+
     - run: meson setup build
       env:
         FC: gfortran
-    - run: ninja -C build
+
+    - run: meson compile -C build
+
     - run: meson test -C build -v
     - uses: actions/upload-artifact@v1
       if: failure()
@@ -42,16 +41,21 @@ jobs:
   macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
       with:
         python-version: '3.x'
+
     - run: brew install pkg-config gcc ninja scalapack
+
     - run: pip install meson
+
     - run: meson setup build
       env:
         FC: gfortran
-    - run: ninja -C build
+
+    - run: meson compile -C build
+
     - run: meson test -C build -v
     - uses: actions/upload-artifact@v1
       if: failure()
