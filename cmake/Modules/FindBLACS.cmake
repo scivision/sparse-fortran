@@ -188,11 +188,7 @@ set(BLACS_INCLUDE_DIR)
 if(MKL IN_LIST BLACS_FIND_COMPONENTS)
   # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
   # double-quotes are necessary per CMake to_cmake_path docs.
-  if(WIN32)
-    file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
-  else()
-    set(MKLROOT "$ENV{MKLROOT}")
-  endif()
+  file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
 
   if(BUILD_SHARED_LIBS)
     set(_mkltype dynamic)

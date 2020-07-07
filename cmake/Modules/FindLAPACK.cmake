@@ -337,11 +337,7 @@ find_package(PkgConfig QUIET)
 if(MKL IN_LIST LAPACK_FIND_COMPONENTS)
   # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
   # double-quotes are necessary per CMake to_cmake_path docs.
-  if(WIN32)
-    file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
-  else()
-    set(MKLROOT "$ENV{MKLROOT}")
-  endif()
+  file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
 
   list(APPEND CMAKE_PREFIX_PATH ${MKLROOT}/bin/pkgconfig)
 
