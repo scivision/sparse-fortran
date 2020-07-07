@@ -1,8 +1,9 @@
+program pardiso_basic
 !! https://software.intel.com/en-us/mkl-developer-reference-fortran-intel-mkl-pardiso-parameters-in-tabular-form
 
 use, intrinsic :: iso_fortran_env, only: int64, dp=>real64, stderr=>error_unit
 
-implicit none
+implicit none (type, external)
 
 integer(int64) :: pt(64)
 integer :: maxfct, mnum, mtype, phase, n, nrhs, error, msglvl
@@ -12,7 +13,7 @@ real(dp) :: dparm (64), a(18), b(8), x(8), y(8)
 integer :: i, j, idum, solver
 real(dp) :: waltime1, waltime2, ddum, normb, normr
 
-external :: pardisoinit
+external :: pardisoinit, pardiso
 
 pt = 0
 iparm = 0

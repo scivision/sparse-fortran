@@ -18,11 +18,13 @@ endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/mumps.cmake)
 
-add_executable(testmumps test_mumps.f90)
-target_include_directories(testmumps PRIVATE ${MUMPS_INCLUDE_DIRS})
-target_link_libraries(testmumps PRIVATE ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
+if(MUMPS_FOUND)
+  add_executable(testmumps test_mumps.f90)
+  target_include_directories(testmumps PRIVATE ${MUMPS_INCLUDE_DIRS})
+  target_link_libraries(testmumps PRIVATE ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
 
-add_test(NAME MUMPS
-  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
-    $<TARGET_FILE:testmumps> ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real)
-set_tests_properties(MUMPS PROPERTIES RUN_SERIAL true TIMEOUT 15)
+  add_test(NAME MUMPS
+    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
+      $<TARGET_FILE:testmumps> ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real)
+  set_tests_properties(MUMPS PROPERTIES RUN_SERIAL true TIMEOUT 15)
+endif(MUMPS_FOUND)
