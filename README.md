@@ -18,6 +18,15 @@ With Anaconda/Miniconda (only tested with Linux):
 * Mpich: `conda install compilers mpich-mpifort mkl mkl-include mumps-mpi blas=*=mkl cmake make -c conda-forge`
 * Openmpi: `conda install compilers openmpi-mpifort mkl mkl-include mumps-mpi blas=*=mkl cmake make -c conda-forge`
 
+## With Docker
+
+In a directory with the [Dockerfile](./Dockerfile)
+
+```sh
+docker build -t sp-fortran .
+docker run -it sp-fortran
+cd sparse-fortran
+```
 
 ### Build with CMake
 
