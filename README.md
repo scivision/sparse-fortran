@@ -13,4 +13,17 @@ For Linux, MUMPS can be easily obtained:
 * Ubuntu / Debian: `apt install libmumps-dev`
 * CentOS: `apt install mumps-devel`
 
+With Anaconda/Miniconda (only tested with Linux):
+
+* Mpich: `conda install compilers mpich-mpifort mkl mkl-include mumps-mpi blas=*=mkl cmake make -c conda-forge`
+* Openmpi: `conda install compilers openmpi-mpifort mkl mkl-include mumps-mpi blas=*=mkl cmake make -c conda-forge`
+
+
+### Build with CMake
+
+```sh
+cmake -B build
+cmake --build build
+```
+
 The simple examples included tests the parallel functionality of MUMPS.
