@@ -30,9 +30,15 @@ cd sparse-fortran
 
 ### Build with CMake
 
+Since Conda does not appear to define MKLROOT, the user using MKL from Conda must either define environment variable MKLROOT=$CONDA_PREFIX or specify at the cmake configure link:
+
+* Linux, MacOS: `-DMKLROOT=$CONDA_PREFIX`
+* Windows Powershell: `-DMKLROOT=$env:conda_prefix
+* Windows Command Prompt: `-MKLROOT=%conda_prefix`
+
 ```sh
-cmake -B build
+cmake -B build  # add here -DMKLROOT=... if needed
 cmake --build build
 ```
 
-The simple examples included tests the parallel functionality of MUMPS.
+The simple examples included test the parallel functionality of MUMPS.

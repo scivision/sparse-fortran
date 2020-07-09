@@ -6,12 +6,6 @@ project(SparseExamples
   LANGUAGES C Fortran)
 enable_testing()
 
-# Check if we are in conda environment
-if (DEFINED ENV{CONDA_PREFIX})
-  set(ENV{MKLROOT} $ENV{CONDA_PREFIX})
-endif()
-
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
 set(realbits 64)
