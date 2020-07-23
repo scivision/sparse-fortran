@@ -11,6 +11,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 set(realbits 64)
 set(arith "d")
 
+option(autobuild "build missing libraries" OFF)
+
 find_package(MPI COMPONENTS Fortran REQUIRED)
 
 add_subdirectory(src)

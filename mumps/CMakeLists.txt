@@ -25,5 +25,7 @@ if(MUMPS_FOUND)
   add_test(NAME MUMPS
     COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
       $<TARGET_FILE:testmumps> ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real)
-  set_tests_properties(MUMPS PROPERTIES RUN_SERIAL true TIMEOUT 15)
+  set_tests_properties(MUMPS PROPERTIES
+    RUN_SERIAL true
+    TIMEOUT 15)
 endif(MUMPS_FOUND)
