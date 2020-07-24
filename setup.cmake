@@ -3,7 +3,7 @@
 
 # --- Project-specific -Doptions
 # these will be used if the project isn't already configured.
-set(_opts)
+set(_opts "-Dautobuild:BOOL=true")
 
 # --- boilerplate follows
 message(STATUS "CMake ${CMAKE_VERSION}")
