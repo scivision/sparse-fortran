@@ -26,6 +26,6 @@ if(MUMPS_FOUND)
     COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
       $<TARGET_FILE:testmumps> ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real)
   set_tests_properties(MUMPS PROPERTIES
-    RUN_SERIAL true
+    RESOURCE_LOCK cpu_mpi
     TIMEOUT 15)
 endif(MUMPS_FOUND)
