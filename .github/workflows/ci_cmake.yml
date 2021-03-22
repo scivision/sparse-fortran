@@ -21,9 +21,9 @@ jobs:
 
     - run: ctest -S setup.cmake -VV
       env:
-        FC: gfortran-9
-        CC: gcc-9
-        CXX: g++-9
+        FC: gfortran-10
+        CC: gcc-10
+        CXX: g++-10
 
   linux:
     runs-on: ubuntu-latest
@@ -36,6 +36,6 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libparmetis-dev
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libparmetis-dev
 
     - run: ctest -S setup.cmake -VV
