@@ -20,6 +20,9 @@ Parameters
 ``MKL``
   Intel MKL for MSVC, ICL, ICC, GCC and PGCC. Working with IntelMPI (default Window, Linux), MPICH (default Mac) or OpenMPI (Linux only).
 
+``MKL64``
+  MKL only: 64-bit integers  (default is 32-bit integers)
+
 ``OpenMPI``
   OpenMPI interface
 
@@ -49,12 +52,58 @@ References
 * MKL link-line advisor: https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 #]=======================================================================]
 
+include(CheckSourceCompiles)
+
 set(SCALAPACK_LIBRARY)  # avoids appending to prior FindScalapack
 set(SCALAPACK_INCLUDE_DIR)
 
 #===== functions
 
-function(mkl_scala)
+function(scalapack_check)
+
+get_property(enabled_langs GLOBAL PROPERTY ENABLED_LANGUAGES)
+if(NOT Fortran IN_LIST enabled_langs)
+  set(SCALAPACK_links true)
+  return()
+endif()
+
+find_package(MPI COMPONENTS C Fortran)
+find_package(LAPACK)
+if(NOT (MPI_Fortran_FOUND AND LAPACK_FOUND))
+  set(SCALAPACK_links true)
+  return()
+endif()
+
+
+set(CMAKE_REQUIRED_FLAGS)
+set(CMAKE_REQUIRED_LINK_OPTIONS)
+set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIR})
+set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} ${BLACS_LIBRARY} LAPACK::LAPACK MPI::MPI_Fortran MPI::MPI_C)
+# MPI needed for ifort
+
+foreach(i s d c z)
+
+  check_source_compiles(Fortran
+    "program test
+    implicit none (type, external)
+    external :: p${i}lamch
+    external :: blacs_pinfo, blacs_get, blacs_gridinit, blacs_gridexit, blacs_exit
+    end program"
+    SCALAPACK_${i}_links)
+
+  if(SCALAPACK_${i}_links)
+    set(SCALAPACK_${i}_FOUND true PARENT_SCOPE)
+    set(SCALAPACK_links true)
+  endif()
+
+endforeach()
+
+set(SCALAPACK_links ${SCALAPACK_links} PARENT_SCOPE)
+
+endfunction(scalapack_check)
+
+
+function(scalapack_mkl)
 
 if(BUILD_SHARED_LIBS)
   set(_mkltype dynamic)
@@ -62,7 +111,10 @@ else()
   set(_mkltype static)
 endif()
 
-pkg_check_modules(pc_mkl mkl-${_mkltype}-lp64-iomp QUIET)
+if(NOT WIN32)
+  # Windows oneAPI crashes here due to bad *.pc
+  pkg_check_modules(pc_mkl mkl-${_mkltype}-${_mkl_bitflag}lp64-iomp)
+endif()
 
 set(_mkl_libs ${ARGV})
 
@@ -85,7 +137,6 @@ foreach(s ${_mkl_libs})
            HINTS ${pc_mkl_LIBRARY_DIRS} ${pc_mkl_LIBDIR}
            NO_DEFAULT_PATH)
   if(NOT SCALAPACK_${s}_LIBRARY)
-    message(STATUS "MKL component not found: " ${s})
     return()
   endif()
 
@@ -98,21 +149,20 @@ find_path(SCALAPACK_INCLUDE_DIR
   PATHS ${MKLROOT} ENV I_MPI_ROOT ENV TBBROOT
   PATH_SUFFIXES
     include
-    include/intel64/lp64
+    include/intel64/${_mkl_bitflag}lp64
   HINTS ${pc_mkl_INCLUDE_DIRS})
 
 if(NOT SCALAPACK_INCLUDE_DIR)
-  message(STATUS "MKL Include Dir not found")
   return()
 endif()
 
-# list(APPEND SCALAPACK_INCLUDE_DIR ${pc_mkl_INCLUDE_DIRS})  # this is unnecessary, and on Windows injects breaking garbage
+# pc_mkl_INCLUDE_DIRS on Windows injects breaking garbage
 
 set(SCALAPACK_MKL_FOUND true PARENT_SCOPE)
 set(SCALAPACK_LIBRARY ${SCALAPACK_LIBRARY} PARENT_SCOPE)
 set(SCALAPACK_INCLUDE_DIR ${SCALAPACK_INCLUDE_DIR} PARENT_SCOPE)
 
-endfunction(mkl_scala)
+endfunction(scalapack_mkl)
 
 # === main
 
@@ -129,12 +179,16 @@ else()
 endif()
 endif()
 
-find_package(PkgConfig QUIET)
+find_package(PkgConfig)
 
 # some systems (Ubuntu 16.04) need BLACS explicitly, when it isn't statically compiled into libscalapack
-# other systems (homebrew, Ubuntu 18.04) link BLACS into libscalapack, and don't need BLACS as a separately linked library.
+
 if(NOT MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
-  find_package(BLACS COMPONENTS ${SCALAPACK_FIND_COMPONENTS} QUIET)
+  find_package(BLACS QUIET)
+  if(NOT BLACS_FOUND)
+    set(BLACS_LIBRARY)
+    set(BLACS_INCLUDE_DIR)
+  endif()
 endif()
 
 if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
@@ -142,25 +196,37 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
   # double-quotes are necessary per CMake to_cmake_path docs.
   file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
 
+  list(APPEND CMAKE_PREFIX_PATH ${MKLROOT}/tools/pkgconfig)
+
+  if(MKL64 IN_LIST SCALAPACK_FIND_COMPONENTS)
+    set(_mkl_bitflag i)
+  else()
+    set(_mkl_bitflag)
+  endif()
+
   if(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
-    mkl_scala(mkl_scalapack_lp64 mkl_blacs_openmpi_lp64)
+    scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_openmpi_${_mkl_bitflag}lp64)
     set(SCALAPACK_OpenMPI_FOUND ${SCALAPACK_MKL_FOUND})
   elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
     if(APPLE)
-      mkl_scala(mkl_scalapack_lp64 mkl_blacs_mpich_lp64)
+      scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_mpich_${_mkl_bitflag}lp64)
     elseif(WIN32)
-      mkl_scala(mkl_scalapack_lp64 mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
+      scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_mpich2_${_mkl_bitflag}lp64.lib mpi.lib fmpich2.lib)
     else()  # MPICH linux is just like IntelMPI
-      mkl_scala(mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64)
+      scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64)
     endif()
     set(SCALAPACK_MPICH_FOUND ${SCALAPACK_MKL_FOUND})
   else()
-    mkl_scala(mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64)
+    scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64)
+  endif()
+
+  if(MKL64 IN_LIST SCALAPACK_FIND_COMPONENTS)
+    set(SCALAPACK_MKL64_FOUND ${SCALAPACK_MKL_FOUND})
   endif()
 
 elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
 
-  pkg_check_modules(pc_scalapack scalapack-openmpi QUIET)
+  pkg_search_module(pc_scalapack scalapack-openmpi scalapack)
 
   find_library(SCALAPACK_LIBRARY
                 NAMES scalapack-openmpi scalapack
@@ -173,7 +239,7 @@ elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
 
 elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
 
-  pkg_check_modules(pc_scalapack scalapack-mpich QUIET)
+  pkg_search_module(pc_scalapack scalapack-mpich scalapack)
 
   find_library(SCALAPACK_LIBRARY
                 NAMES scalapack-mpich scalapack-mpich2
@@ -186,11 +252,17 @@ elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
 
 endif()
 
+# --- Check that Scalapack links
+
+if(SCALAPACK_LIBRARY)
+  scalapack_check()
+endif()
+
 # --- Finalize
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(SCALAPACK
-  REQUIRED_VARS SCALAPACK_LIBRARY
+  REQUIRED_VARS SCALAPACK_LIBRARY SCALAPACK_links
   HANDLE_COMPONENTS)
 
 if(SCALAPACK_FOUND)
@@ -207,8 +279,6 @@ if(BLACS_FOUND)
                           INTERFACE_INCLUDE_DIRECTORIES "${BLACS_INCLUDE_DIR}"
                         )
   endif()
-else()
-  set(BLACS_LIBRARY)
 endif()
 
 if(NOT TARGET SCALAPACK::SCALAPACK)

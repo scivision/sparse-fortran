@@ -51,24 +51,3 @@ list(APPEND MUMPS_LIBRARIES SCALAPACK::SCALAPACK LAPACK::LAPACK ${_mumps_extra})
 if(OpenMP_FOUND)
   list(APPEND MUMPS_LIBRARIES OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
 endif()
-
-if(mumps_external OR scalapack_external OR lapack_external)
-# pre-build checks can't be used when external library isn't built yet.
-  return()
-endif()
-
-# -- minimal check that MUMPS is linkable
-set(CMAKE_REQUIRED_LIBRARIES MUMPS::MUMPS MPI::MPI_Fortran)
-
-check_fortran_source_compiles("include '${arith}mumps_struc.h'
-type(${arith}mumps_struc) :: mumps_par
-end"
-  MUMPS_link SRC_EXT f90)
-
-if(NOT MUMPS_link)
-  message(STATUS "MUMPS ${MUMPS_LIBRARIES} not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
-  if(NOT autobuild)
-    message(FATAL_ERROR "autobuild=off, so cannot proceed")
-  endif()
-  include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
-endif()
