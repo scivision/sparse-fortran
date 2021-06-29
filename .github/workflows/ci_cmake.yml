@@ -21,9 +21,7 @@ jobs:
 
     - run: ctest -S setup.cmake -VV
       env:
-        FC: gfortran-10
-        CC: gcc-10
-        CXX: g++-10
+        FC: gfortran-11
 
   linux:
     runs-on: ubuntu-latest
