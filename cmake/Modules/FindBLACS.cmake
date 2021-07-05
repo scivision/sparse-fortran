@@ -54,14 +54,13 @@ set(BLACS_LIBRARY)  # don't endlessly append
 
 #===== functions
 
-function(mkl_blacs)
+function(blacs_mkl)
 
 set(_mkl_libs ${ARGV})
 
 foreach(s ${_mkl_libs})
   find_library(BLACS_${s}_LIBRARY
            NAMES ${s}
-           NAMES_PER_DIR
            PATHS
             ${MKLROOT}
             ENV I_MPI_ROOT
@@ -77,7 +76,6 @@ foreach(s ${_mkl_libs})
            HINTS ${MKL_LIBRARY_DIRS} ${MKL_LIBDIR}
            NO_DEFAULT_PATH)
   if(NOT BLACS_${s}_LIBRARY)
-    message(STATUS "MKL component not found: " ${s})
     return()
   endif()
 
@@ -97,7 +95,6 @@ find_path(BLACS_INCLUDE_DIR
   HINTS ${MKL_INCLUDE_DIRS})
 
 if(NOT BLACS_INCLUDE_DIR)
-  message(STATUS "MKL Include Dir not found")
   return()
 endif()
 
@@ -107,7 +104,7 @@ set(BLACS_MKL_FOUND true PARENT_SCOPE)
 set(BLACS_LIBRARY ${BLACS_LIBRARY} PARENT_SCOPE)
 set(BLACS_INCLUDE_DIR ${BLACS_INCLUDE_DIR} PARENT_SCOPE)
 
-endfunction(mkl_blacs)
+endfunction(blacs_mkl)
 
 
 function(nonmkl)
@@ -124,8 +121,7 @@ endif()
 elseif(LAM IN_LIST BLACS_FIND_COMPONENTS)
 
 find_library(BLACS_LIBRARY
-              NAMES blacs-lam
-              NAMES_PER_DIR)
+              NAMES blacs-lam)
 if(BLACS_LIBRARY)
   set(BLACS_LAM_FOUND true PARENT_SCOPE)
 endif()
@@ -133,8 +129,7 @@ endif()
 elseif(PVM IN_LIST BLACS_FIND_COMPONENTS)
 
 find_library(BLACS_LIBRARY
-              NAMES blacs-pvm
-              NAMES_PER_DIR)
+              NAMES blacs-pvm)
 if(BLACS_LIBRARY)
   set(BLACS_PVM_FOUND true PARENT_SCOPE)
 endif()
@@ -188,7 +183,7 @@ else()
 endif()
 endif()
 
-find_package(PkgConfig QUIET)
+find_package(PkgConfig)
 
 set(BLACS_INCLUDE_DIR)
 
@@ -197,28 +192,30 @@ if(MKL IN_LIST BLACS_FIND_COMPONENTS)
   # double-quotes are necessary per CMake to_cmake_path docs.
   file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
 
+  list(APPEND CMAKE_PREFIX_PATH ${MKLROOT}/tools/pkgconfig)
+
   if(BUILD_SHARED_LIBS)
     set(_mkltype dynamic)
   else()
     set(_mkltype static)
   endif()
 
-  pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp QUIET)
+  pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp)
 
   if(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
-    mkl_scala(mkl_blacs_openmpi_lp64)
+    blacs_mkl(mkl_blacs_openmpi_lp64)
     set(BLACS_OpenMPI_FOUND ${BLACS_MKL_FOUND})
   elseif(MPICH IN_LIST BLACS_FIND_COMPONENTS)
     if(APPLE)
-      mkl_scala(mkl_blacs_mpich_lp64)
+      blacs_mkl(mkl_blacs_mpich_lp64)
     elseif(WIN32)
-      mkl_scala(mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
+      blacs_mkl(mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
     else()  # MPICH linux is just like IntelMPI
-      mkl_scala(mkl_blacs_intelmpi_lp64)
+      blacs_mkl(mkl_blacs_intelmpi_lp64)
     endif()
     set(BLACS_MPICH_FOUND ${BLACS_MKL_FOUND})
   else()
-    mkl_scala(mkl_blacs_intelmpi_lp64)
+    blacs_mkl(mkl_blacs_intelmpi_lp64)
   endif()
 
 else(MKL IN_LIST BLACS_FIND_COMPONENTS)
