@@ -37,14 +37,10 @@ else()
   return()
 endif()
 
-if(metis)
-  find_package(METIS REQUIRED)
-  list(APPEND _mumps_extra METIS::METIS)
-endif()
-
 if(scotch)
   find_package(Scotch REQUIRED COMPONENTS ESMUMPS)
-  list(APPEND _mumps_extra Scotch::Scotch)
+  find_package(METIS REQUIRED)
+  list(APPEND _mumps_extra Scotch::Scotch METIS::METIS)
 endif()
 # rather than appending libraries everywhere, just put them together here.
 list(APPEND MUMPS_LIBRARIES SCALAPACK::SCALAPACK LAPACK::LAPACK ${_mumps_extra})

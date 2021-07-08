@@ -13,15 +13,19 @@ on:
 jobs:
 
   macos:
+    needs: linux
     runs-on: macos-latest
+    env:
+      FC: gfortran-11
+
     steps:
     - uses: actions/checkout@v2
 
-    - run: brew install pkg-config gcc scalapack
+    - run: brew install ninja scalapack
 
-    - run: ctest -S setup.cmake -VV
-      env:
-        FC: gfortran-11
+    - run: cmake -B build
+    - run: cmake --build build
+    - run: ctest --test-dir build -V
 
   linux:
     runs-on: ubuntu-latest
@@ -36,4 +40,6 @@ jobs:
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libparmetis-dev
 
-    - run: ctest -S setup.cmake -VV
+    - run: cmake -B build
+    - run: cmake --build build
+    - run: ctest --test-dir build -V

@@ -3,9 +3,7 @@ name: ci_meson
 on:
   push:
     paths:
-      - "**.f90"
-      - "**.F90"
-      - "**.build"
+      - "**/meson.build"
       - ".github/workflows/ci_meson.yml"
 
 jobs:
@@ -23,7 +21,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libparmetis-dev
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libparmetis-dev
 
     - run: meson setup build
       env:
@@ -32,33 +30,26 @@ jobs:
     - run: meson compile -C build
 
     - run: meson test -C build -v
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: Linux_Meson_Testlog
-        path: build/meson-logs/testlog.txt
+
 
   macos:
+    needs: linux
     runs-on: macos-latest
+    env:
+        FC: gfortran-11
+
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - run: brew install pkg-config gcc ninja scalapack
+    - run: brew install ninja scalapack
 
     - run: pip install meson
 
     - run: meson setup build
-      env:
-        FC: gfortran
 
     - run: meson compile -C build
 
     - run: meson test -C build -v
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: MacOS_Meson_Testlog
-        path: build/meson-logs/testlog.txt
