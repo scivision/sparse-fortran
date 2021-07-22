@@ -1,5 +1,9 @@
 name: ci_cmake
 
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 3
+  CTEST_PARALLEL_LEVEL: 3
+
 on:
   push:
     paths:
@@ -21,7 +25,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: brew install ninja scalapack
+    - run: brew install scalapack open-mpi
 
     - run: cmake -B build
     - run: cmake --build build
