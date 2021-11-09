@@ -161,7 +161,11 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
 
   # find MKL MPI binding
   if(WIN32)
-    scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64)
+    if(BUILD_SHARED_LIBS)
+      scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64_dll mkl_blacs_${_mkl_bitflag}lp64_dll)
+    else()
+      scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64)
+    endif()
   elseif(APPLE)
     scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_mpich_${_mkl_bitflag}lp64)
   else()
@@ -176,13 +180,22 @@ else()
 
   find_package(PkgConfig)
 
-  pkg_search_module(pc_scalapack scalapack-openmpi scalapack-mpich scalapack)
+  pkg_search_module(pc_scalapack scalapack scalapack-openmpi scalapack-mpich)
 
   find_library(SCALAPACK_LIBRARY
     NAMES scalapack scalapack-openmpi scalapack-mpich
     NAMES_PER_DIR
     HINTS ${pc_scalapack_LIBRARY_DIRS} ${pc_scalapack_LIBDIR}
     PATH_SUFFIXES openmpi/lib mpich/lib
+  )
+
+  # some systems have libblacs as a separate file, instead of being subsumed in libscalapack.
+  cmake_path(GET SCALAPACK_LIBRARY PARENT_PATH BLACS_ROOT)
+
+  find_library(BLACS_LIBRARY
+    NAMES blacs
+    NO_DEFAULT_PATH
+    HINTS ${BLACS_ROOT}
   )
 
 endif()
@@ -203,12 +216,15 @@ find_package_handle_standard_args(SCALAPACK
 if(SCALAPACK_FOUND)
 # need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
 set(SCALAPACK_LIBRARIES ${SCALAPACK_LIBRARY})
+if(BLACS_LIBRARY)
+  list(APPEND SCALAPACK_LIBRARIES ${BLACS_LIBRARY})
+endif()
 set(SCALAPACK_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIR})
 
 if(NOT TARGET SCALAPACK::SCALAPACK)
   add_library(SCALAPACK::SCALAPACK INTERFACE IMPORTED)
   set_target_properties(SCALAPACK::SCALAPACK PROPERTIES
-                        INTERFACE_LINK_LIBRARIES "${SCALAPACK_LIBRARY}"
+                        INTERFACE_LINK_LIBRARIES "${SCALAPACK_LIBRARIES}"
                         INTERFACE_INCLUDE_DIRECTORIES "${SCALAPACK_INCLUDE_DIR}"
                       )
 endif()
