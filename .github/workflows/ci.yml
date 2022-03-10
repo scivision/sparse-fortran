@@ -1,0 +1,43 @@
+name: ci
+
+env:
+  CTEST_PARALLEL_LEVEL: 3
+  CMAKE_BUILD_TYPE: Release
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+on:
+  push:
+    paths:
+      - "**.f90"
+      - "**.F90"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
+      - ".github/workflows/ci_cmake.yml"
+
+
+jobs:
+
+  core:
+
+    strategy:
+      matrix:
+        img: [
+          { os: ubuntu-latest, fc: gfortran, cmd: sudo apt update && sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libparmetis-dev },
+          { os: macos-latest, fc: gfortran-11, cmd: brew install scalapack open-mpi}
+          ]
+
+    runs-on: ${{ matrix.img.os }}
+
+    steps:
+
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install packages
+      run: ${{ matrix.img.cmd }}
+
+    - run: cmake -B build
+    - run: cmake --build build
+    - run: ctest --test-dir build -V

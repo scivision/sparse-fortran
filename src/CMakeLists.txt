@@ -8,14 +8,51 @@ if(METIS_FOUND)
   set_tests_properties(Metis PROPERTIES TIMEOUT 15)
 endif()
 
+if(MUMPS_FOUND)
+  add_executable(testmumps test_mumps.f90)
+  target_link_libraries(testmumps PRIVATE MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
+
+  add_test(NAME MUMPS
+  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
+    $<TARGET_FILE:testmumps> ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real
+  )
+  set_tests_properties(MUMPS PROPERTIES
+  RESOURCE_LOCK cpu_mpi
+  TIMEOUT 15
+  )
+endif()
+
 if("d" IN_LIST arith)
   add_executable(blacs_demo blacs_demo.f90)
   target_link_libraries(blacs_demo PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
   add_test(NAME BLACS COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:blacs_demo>)
-  set_tests_properties(BLACS PROPERTIES TIMEOUT 15)
 
   add_executable(scalapack_demo scalapack_demo.f90)
   target_link_libraries(scalapack_demo PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
   add_test(NAME Scalapack COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:scalapack_demo>)
-  set_tests_properties(Scalapack PROPERTIES TIMEOUT 15)
+  set_tests_properties(BLACS Scalapack PROPERTIES TIMEOUT 15)
+endif()
+
+
+# --- pardiso
+
+include(CheckSourceCompiles)
+
+set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIRS})
+set(CMAKE_REQUIRED_LIBRARIES ${SCALPACK_LIBRARIES} ${LAPACK_LIBRARIES})
+
+check_source_compiles(Fortran
+"program par
+implicit none (type, external)
+external :: pardisoinit, pardiso
+
+call pardisoinit()
+end program"
+HAVE_PARDISO
+)
+
+if(HAVE_PARDISO)
+  add_executable(pardiso_basic pardiso_basic.f90)
+  target_link_libraries(pardiso_basic PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK)
+  add_test(NAME pardisoBasic COMMAND pardiso_basic)
 endif()

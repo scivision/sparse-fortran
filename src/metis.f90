@@ -2,7 +2,7 @@
 
 use, intrinsic:: iso_fortran_env, only: dp=>real64
 
-implicit none
+implicit none (type, external)
 !> 0  METIS_OPTION_PTYPE
 !>    -- 0 METIS_PTYPE_RB
 !>    -- 1 METIS_PTYPE_KWAY
@@ -40,7 +40,11 @@ integer, parameter  :: nvtxs=15, ncon=1
 integer          :: xadj(nvtxs+1), adjncy(44), part(nvtxs), j, nparts, objval, refpart(nvtxs)
 integer, pointer   :: vwgt=>null(), vsize=>null(), adjwgt=>null()
 real(dp), pointer  :: tpwgts=>null(), ubvec=>null()
+
+external :: METIS_SetDefaultOptions, METIS_PartGraphKway
+
 allocate(options(0:40))
+
 
 call METIS_SetDefaultOptions(options)
 

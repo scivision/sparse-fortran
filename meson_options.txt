@@ -1,3 +1,0 @@
-option('mklroot', type: 'string', description: '-Dmklroot=$MKLROOT')
-option('mpiroot', type: 'string', description: 'MPI root directory')
-option('mumpsroot', type: 'string', description: 'mumps root directory')

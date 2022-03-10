@@ -50,9 +50,9 @@
 set(Scotch_LIBRARIES)
 
 find_path(Scotch_INCLUDE_DIR
-  NAMES scotch.h
-  PATH_SUFFIXES scotch openmpi openmpi-x86_64 mpich-x86_64)
-mark_as_advanced(Scotch_INCLUDE_DIR)
+NAMES scotch.h
+PATH_SUFFIXES scotch openmpi openmpi-x86_64 mpich-x86_64
+)
 
 # need plain scotch when using ptscotch
 set(scotch_names scotch scotcherr)
@@ -67,37 +67,41 @@ if(parallel IN_LIST Scotch_FIND_COMPONENTS)
   endif()
 endif()
 
-foreach(_lib ${scotch_names})
-  find_library(Scotch_${_lib}_LIBRARY
-    NAMES ${_lib}
-    PATH_SUFFIXES openmpi/lib mpich/lib)
+foreach(l IN LISTS scotch_names)
+  find_library(Scotch_${l}_LIBRARY
+  NAMES ${l}
+  PATH_SUFFIXES openmpi/lib mpich/lib
+  )
 
-  list(APPEND Scotch_LIBRARIES ${Scotch_${_lib}_LIBRARY})
-  mark_as_advanced(Scotch_${_lib}_LIBRARY)
+  list(APPEND Scotch_LIBRARIES ${Scotch_${l}_LIBRARY})
+  mark_as_advanced(Scotch_${l}_LIBRARY)
 endforeach()
 
-if(Scotch_ptesmumps_LIBRARY OR Scotch_esmumps_LIBRARY)
+if(parallel IN_LIST Scotch_FIND_COMPONENTS)
+  if(Scotch_ptesmumps_LIBRARY AND Scotch_ptscotch_LIBRARY)
+    set(Scotch_ESMUMPS_FOUND true)
+    set(Scotch_parallel_FOUND true)
+  endif()
+elseif(Scotch_esmumps_LIBRARY)
   set(Scotch_ESMUMPS_FOUND true)
-endif()
-
-if(Scotch_ptscotch_LIBRARY)
-  set(Scotch_parallel_FOUND true)
 endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Scotch
-  REQUIRED_VARS Scotch_LIBRARIES Scotch_INCLUDE_DIR
-  HANDLE_COMPONENTS)
+REQUIRED_VARS Scotch_LIBRARIES Scotch_INCLUDE_DIR
+HANDLE_COMPONENTS
+)
 
 if(Scotch_FOUND)
-# need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
 set(Scotch_INCLUDE_DIRS ${Scotch_INCLUDE_DIR})
 
 if(NOT TARGET Scotch::Scotch)
   add_library(Scotch::Scotch INTERFACE IMPORTED)
   set_target_properties(Scotch::Scotch PROPERTIES
-                        INTERFACE_LINK_LIBRARIES "${Scotch_LIBRARIES}"
-                        INTERFACE_INCLUDE_DIRECTORIES "${Scotch_INCLUDE_DIR}"
-                      )
+  INTERFACE_LINK_LIBRARIES "${Scotch_LIBRARIES}"
+  INTERFACE_INCLUDE_DIRECTORIES "${Scotch_INCLUDE_DIR}"
+  )
 endif()
 endif(Scotch_FOUND)
+
+mark_as_advanced(Scotch_INCLUDE_DIR)
