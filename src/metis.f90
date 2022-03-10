@@ -1,5 +1,7 @@
 !! https://github.com/lanl/qmd-progress/
 
+program test_metis
+
 use, intrinsic:: iso_fortran_env, only: dp=>real64
 
 implicit none (type, external)

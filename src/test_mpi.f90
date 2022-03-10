@@ -1,6 +1,6 @@
 program mpiTypes
 use, intrinsic :: iso_fortran_env
-use mpi_f08
+use mpi
 
 implicit none
 

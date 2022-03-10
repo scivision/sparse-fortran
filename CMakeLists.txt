@@ -6,7 +6,6 @@ LANGUAGES C Fortran
 
 enable_testing()
 
-set(realbits 64)
 set(arith "d")
 
 include(cmake/options.cmake)
