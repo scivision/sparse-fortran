@@ -12,7 +12,7 @@ on:
       - "**.F90"
       - "**/CMakeLists.txt"
       - "**.cmake"
-      - ".github/workflows/ci_cmake.yml"
+      - ".github/workflows/ci.yml"
 
 
 jobs:
@@ -23,17 +23,16 @@ jobs:
       matrix:
         img: [
           { os: ubuntu-latest, fc: gfortran, cmd: sudo apt update && sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libparmetis-dev },
-          { os: macos-latest, fc: gfortran-11, cmd: brew install scalapack open-mpi}
+          { os: macos-latest, fc: gfortran-11, cmd: brew install scalapack open-mpi metis}
           ]
 
     runs-on: ${{ matrix.img.os }}
+    env:
+      FC: ${{ matrix.img.fc }}
 
     steps:
 
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
 
     - name: Install packages
       run: ${{ matrix.img.cmd }}
