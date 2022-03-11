@@ -66,9 +66,7 @@ adjncy=[2, 6, 1, 3, 7, 2, 4, 8, 3, 5, 9, 4, 10, 1, 7, 11, 12, 6, 8,&
 
 call METIS_PartGraphKway(nvtxs, ncon, xadj, adjncy, vwgt, vsize, adjwgt, nparts, tpwgts, ubvec, options, objval, part)
 
-do, j=1,nvtxs
-  print *, j, part(j)
-enddo
+print '(15I3)', part
 
 refpart = [3,1,1,2,4,3,4,2,2,4,3,1,1,2,4]
 

@@ -10,6 +10,10 @@ set(arith "d")
 
 include(cmake/options.cmake)
 
+add_compile_options(
+$<$<AND:$<CONFIG:Release>,$<COMPILE_LANG_AND_ID:Fortran,GNU>>:-fno-backtrace>
+)
+
 find_package(MPI COMPONENTS C Fortran REQUIRED)
 find_package(LAPACK REQUIRED)
 find_package(SCALAPACK REQUIRED)

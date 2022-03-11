@@ -1,11 +1,7 @@
 if(METIS_FOUND)
   add_executable(metis_demo metis.f90)
   target_link_libraries(metis_demo PRIVATE METIS::METIS)
-
-  add_test(NAME Metis
-  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:metis_demo>
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  )
+  add_test(NAME Metis COMMAND metis_demo)
 endif()
 
 if(MUMPS_FOUND)
