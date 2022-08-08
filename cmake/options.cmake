@@ -1,16 +1,9 @@
 set(CMAKE_TLS_VERIFY true)
 
-set_directory_properties(PROPERTIES EP_UPDATE_DISCONNECTED true)
 
-cmake_path(SET CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/Modules)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/libraries.json json)
-
-if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
-  set(EXTPROJ_GENERATOR "Ninja")
-else()
-  set(EXTPROJ_GENERATOR ${CMAKE_GENERATOR})
-endif()
 
 # Rpath options necessary for shared library install to work correctly in user projects
 set(CMAKE_INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
