@@ -1,8 +1,6 @@
 name: ci
 
 env:
-  CTEST_PARALLEL_LEVEL: 3
-  CMAKE_BUILD_TYPE: Release
   HOMEBREW_NO_INSTALL_CLEANUP: 1
 
 on:
@@ -22,17 +20,15 @@ jobs:
     strategy:
       matrix:
         img: [
-          { os: ubuntu-latest, fc: gfortran, cmd: sudo apt update && sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libparmetis-dev },
-          { os: macos-latest, fc: gfortran-11, cmd: brew install scalapack open-mpi metis}
+          { os: ubuntu-latest, cmd: sudo apt update && sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libparmetis-dev },
+          { os: macos-latest, cmd: brew install scalapack open-mpi metis && brew reinstall gcc}
           ]
 
     runs-on: ${{ matrix.img.os }}
-    env:
-      FC: ${{ matrix.img.fc }}
 
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install packages
       run: ${{ matrix.img.cmd }}
