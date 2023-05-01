@@ -15,5 +15,6 @@ find_package(LAPACK REQUIRED)
 find_package(SCALAPACK REQUIRED)
 find_package(MUMPS)
 find_package(METIS)
+find_package(MKL_SDL)
 
 add_subdirectory(src)
