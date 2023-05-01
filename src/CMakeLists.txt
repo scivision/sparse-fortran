@@ -69,6 +69,6 @@ HAVE_PARDISO
 
 if(HAVE_PARDISO)
   add_executable(pardiso_basic pardiso_basic.f90)
-  target_link_libraries(pardiso_basic PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK)
+  target_link_libraries(pardiso_basic PRIVATE MKL_SDL::MKL_SDL)
   add_test(NAME pardisoBasic COMMAND pardiso_basic)
 endif()
