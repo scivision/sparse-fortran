@@ -1,3 +1,5 @@
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/mpi_launcher.cmake)
+
 if(METIS_FOUND)
   add_executable(metis_demo metis.f90)
   target_link_libraries(metis_demo PRIVATE METIS::METIS)
@@ -8,24 +10,20 @@ if(MUMPS_FOUND)
   add_executable(testmumps test_mumps.f90)
   target_link_libraries(testmumps PRIVATE MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 
-  add_test(NAME MUMPS
-  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
-    $<TARGET_FILE:testmumps> ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real
-  )
+  add_test(NAME MUMPS COMMAND testmumps ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real)
+  test_mpi_launcher(testmumps MUMPS ${MPIEXEC_MAX_NUMPROCS})
 endif()
 
 if("d" IN_LIST arith)
   add_executable(blacs_demo blacs_demo.f90)
   target_link_libraries(blacs_demo PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
-  add_test(NAME BLACS
-  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:blacs_demo>
-  )
+  add_test(NAME BLACS COMMAND blacs_demo)
+  test_mpi_launcher(blacs_demo BLACS ${MPIEXEC_MAX_NUMPROCS})
 
   add_executable(scalapack_demo scalapack_demo.f90)
   target_link_libraries(scalapack_demo PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
-  add_test(NAME Scalapack
-  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:scalapack_demo>
-  )
+  add_test(NAME Scalapack COMMAND scalapack_demo)
+  test_mpi_launcher(scalapack_demo Scalapack ${MPIEXEC_MAX_NUMPROCS})
 endif()
 
 get_property(_test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
@@ -35,7 +33,7 @@ RESOURCE_LOCK cpu_mpi
 TIMEOUT 15
 )
 
-if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+if(WIN32)
   get_target_property(lib SCALAPACK::SCALAPACK INTERFACE_LINK_LIBRARIES)
   if(lib)
     list(GET lib 0 lib)
