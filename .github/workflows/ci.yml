@@ -2,6 +2,8 @@ name: ci
 
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
+  CTEST_NO_TESTS_ACTION: error
+  CMAKE_BUILD_TYPE: Release
 
 on:
   push:
@@ -11,7 +13,12 @@ on:
       - "**/CMakeLists.txt"
       - "**.cmake"
       - ".github/workflows/ci.yml"
+  workflow_dispatch:
 
+# avoid wasted runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
 
@@ -19,20 +26,28 @@ jobs:
 
     strategy:
       matrix:
-        img: [
-          { os: ubuntu-latest, cmd: sudo apt update && sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libparmetis-dev },
-          { os: macos-latest, cmd: brew install scalapack open-mpi metis && brew reinstall gcc}
-          ]
+        os: [ubuntu-latest, macos-latest]
 
-    runs-on: ${{ matrix.img.os }}
+    runs-on: ${{ matrix.os }}
 
     steps:
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Install packages
-      run: ${{ matrix.img.cmd }}
+    - name: Install packages Linux
+      timeout-minutes: 15
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libparmetis-dev
+
+    - name: Install packages macOS
+      timeout-minutes: 15
+      if: runner.os == 'macOS'
+      run: brew install scalapack open-mpi metis
 
     - run: cmake -B build
     - run: cmake --build build
+
     - run: ctest --test-dir build -V
+      timeout-minutes: 3
